@@ -1,3 +1,0 @@
-flask
-tradingview-ta
-gunicorn App:app
