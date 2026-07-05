@@ -1,3 +1,9 @@
 flask
-tradingview-ta
 gunicorn
+pandas
+numpy
+scikit-learn
+pandas_ta
+requests
+websocket-client
+
