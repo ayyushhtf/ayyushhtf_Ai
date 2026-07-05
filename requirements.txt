@@ -1,4 +1,4 @@
-flask
+streamlit
 gunicorn
 pandas
 numpy
@@ -6,4 +6,3 @@ scikit-learn
 pandas_ta
 requests
 websocket-client
-
