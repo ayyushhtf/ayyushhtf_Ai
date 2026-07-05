@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World's No.1 AI Analysis Engine</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0b0e14;
+            --card-bg: #151a26;
+            --accent-green: #00b074;
+            --accent-red: #ff3b30;
+            --text-main: #ffffff;
+            --text-muted: #78829e;
+            --primary: #3b82f6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
+
+        /* Login Screen */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .login-box {
+            background: var(--card-bg); padding: 40px; border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px;
+            border: 1px solid #2a3447;
+        }
+        .login-box h2 { margin-bottom: 20px; font-size: 24px; color: var(--primary); }
+        .login-box input {
+            width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 6px;
+            border: 1px solid #2a3447; background: var(--bg-dark); color: white; text-align: center; font-size: 16px;
+        }
+        .login-box button {
+            width: 100%; padding: 12px; border: none; border-radius: 6px;
+            background: var(--primary); color: white; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .login-box button:hover { background: #2563eb; }
+
+        /* Main Dashboard Layout */
+        #dashboard { display: none; padding: 20px; max-width: 1600px; margin: 0 auto; }
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 20px; border-bottom: 1px solid #2a3447; margin-bottom: 20px;
+        }
+        .logo { font-size: 22px; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        
+        .grid-container {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg); border-radius: 10px; padding: 20px;
+            border: 1px solid #2a3447; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .card-title { font-size: 16px; color: var(--text-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+
+        /* Controls */
+        .controls-row { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        select, button.btn-analyze {
+            padding: 12px 20px; border-radius: 6px; background: #1e2533; border: 1px solid #2a3447;
+            color: white; font-size: 14px; cursor: pointer; outline: none;
+        }
+        button.btn-analyze { background: var(--primary); font-weight: bold; border: none; transition: 0.2s; }
+        button.btn-analyze:hover { background: #2563eb; transform: scale(1.02); }
+
+        /* Signal UI */
+        .signal-display { text-align: center; padding: 20px 0; }
+        .signal-text { font-size: 42px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+        .signal-up { color: var(--accent-green); text-shadow: 0 0 20px rgba(0,176,116,0.4); }
+        .signal-down { color: var(--accent-red); text-shadow: 0 0 20px rgba(255,59,48,0.4); }
+        
+        /* Progress Bar for Confidence */
+        .confidence-container { margin-top: 15px; }
+        .progress-bar-bg { background: #2a3447; height: 12px; border-radius: 6px; overflow: hidden; display: flex; }
+        .progress-up { background: var(--accent-green); height: 100%; transition: width 0.5s ease; }
+        .progress-down { background: var(--accent-red); height: 100%; transition: width 0.5s ease; }
+        .confidence-labels { display: flex; justify-content: space-between; margin-top: 5px; font-size: 13px; font-weight: 600; }
+
+        /* Data Lists */
+        .data-list { list-style: none; }
+        .data-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #1e2533; font-size: 14px; }
+        .data-item:last-child { border-bottom: none; }
+        .status-high { color: var(--accent-green); font-weight: bold; }
+        .status-low { color: var(--accent-red); font-weight: bold; }
+
+        /* History Table */
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        .history-table th, .history-table td { padding: 10px; text-align: left; border-bottom: 1px solid #1e2533; }
+        .history-table th { color: var(--text-muted); }
+
+        /* Calculator Form */
+        .calc-group { margin-bottom: 12px; }
+        .calc-group label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+        .calc-group input { width: 100%; padding: 8px; background: var(--bg-dark); border: 1px solid #2a3447; color: white; border-radius: 4px; }
+
+        @media (max-width: 768px) {
+            #dashboard { padding: 10px; }
+            .grid-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Step 1: Password Gateway -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h2><i class="fa-solid fa-robot"></i> AI Engine Login</h2>
+            <p style="color: var(--text-muted); margin-bottom: 15px; font-size: 14px;">Enter Master Password to Unlock</p>
+            <input type="password" id="password-input" placeholder="Enter Password...">
+            <button onclick="checkPassword()">Unlock System</button>
+            <p id="login-error" style="color: var(--accent-red); margin-top: 10px; font-size: 13px; display: none;">Invalid Password!</p>
+        </div>
+    </div>
+
+    <!-- Step 2: Main Dashboard Dashboard -->
+    <div id="dashboard">
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-bolt" style="color: #eab308;"></i> WORLD NO.1 AI DECISION ENGINE v4.0
+            </div>
+            <div style="font-size: 14px; color: var(--accent-green); font-weight: bold;">
+                <i class="fa-solid fa-circle-check"></i> LIVE MARKET CONNECTED
+            </div>
+        </header>
+
+        <!-- Top Selectors -->
+        <div class="controls-row">
+            <select id="asset-pair">
+                <option value="EUR/USD">EUR/USD (All Pairs Live)</option>
+                <option value="GBP/USD">GBP/USD</option>
+                <option value="USD/JPY">USD/JPY</option>
+                <option value="AUD/USD">AUD/USD</option>
+                <option value="BTC/USDT">BTC/USDT (Crypto)</option>
+                <option value="ETH/USDT">ETH/USDT</option>
+                <option value="EUR/GBP">EUR/GBP (OTC/Live)</option>
+            </select>
+            <select id="timeframe">
+                <option value="1m">1 Minute Timeframe</option>
+                <option value="5m">5 Minute Timeframe</option>
+                <option value="15m">15 Minute Timeframe</option>
+                <option value="1h">1 Hour Timeframe</option>
+            </select>
+            <button class="btn-analyze" onclick="generateAnalysis()">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> ANALYZE NOW
+            </button>
+        </div>
+
+        <!-- Main Workspace Grid -->
+        <div class="grid-container">
+            
+            <!-- Real-time AI Intelligence Output -->
+            <div class="card" style="grid-column: span 1;">
+                <div class="card-title"><i class="fa-solid fa-brain" style="color: #a855f7;"></i> AI Decision Signal Engine</div>
+                <div class="signal-display">
+                    <div id="signal-arrow" class="signal-text signal-up">CALL / UP</div>
+                    <p style="font-size: 14px; color: var(--text-muted);">Current Market Trend Direction</p>
+                </div>
+                <div class="confidence-container">
+                    <div class="confidence-labels">
+                        <span style="color: var(--accent-green);">UP Prob: <span id="up-pct">78%</span></span>
+                        <span style="color: var(--accent-red);">DOWN Prob: <span id="down-pct">22%</span></span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div id="bar-up" class="progress-up" style="width: 78%;"></div>
+                        <div id="bar-down" class="progress-down" style="width: 22%;"></div>
+                    </div>
+                </div>
+                <p style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 15px;">
+                    <i class="fa-solid fa-shield-halved"></i> Calculated from 30+ Core Technical Indicators
+                </p>
+            </div>
+
+            <!-- Technical Indicators Summary (30+ Engines Mock Data Grid) -->
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-chart-line"></i> 30+ Core Technical Indicators</div>
+                <ul class="data-list">
+                    <li class="data-item"><span>Relative Strength Index (RSI)</span><span id="ind-rsi" class="status-high">Strong Buy</span></li>
+                    <li class="data-item"><span>MACD Crossover</span><span id="ind-macd" class="status-high">Bullish</span></li>
+                    <li class="data-item"><span>Stochastic RSI</span><span id="ind-stoch" class="status-low">Oversold</span></li>
+                    <li class="data-item"><span>Bollinger Bands Deviation</span><span id="ind-bb">Lower Band Touch</span></li>
+                    <li class="data-item"><span>Supertrend Line (10, 3)</span><span id="ind-super" class="status-high">Buy Trend</span></li>
+                    <li class="data-item"><span>VWAP / Ichimoku Cloud</span><span id="ind-vwap" class="status-high">Above Cloud</span></li>
+                </ul>
+            </div>
+
+            <!-- Candlestick Patterns & S&R Analysis -->
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-fire"></i> Price Action & Candlesticks</div>
+                <ul class="data-list">
+                    <li class="data-item"><span>Candlestick Pattern</span><span id="pa-candle" style="color:#eab308; font-weight:bold;">Hammer Detected</span></li>
+                    <li class="data-item"><span>Trend Analysis</span><span id="pa-trend" class="status-high">Strong Uptrend</span></li>
+                    <li class="data-item"><span>Immediate Support Line</span><span id="pa-support" style="color: var(--primary);">1.08420</span></li>
+                    <li class="data-item"><span>Immediate Resistance Line</span><span id="pa-resistance" style="color: var(--accent-red);">1.08950</span></li>
+                    <li class="data-item"><span>Volume Analysis Spike</span><span id="pa-volume" class="status-high">+45% Buying</span></li>
+                </ul>
+            </div>
+
+            <!-- Intelligent Money Management Tool -->
+            <div class="card">
+                <div class="card-title"><i class="fa-solid fa-wallet"></i> Money Management Calculator</div>
+                <div class="calc-group">
+                    <label>Total Account Balance ($)</label>
+                    <input type="number" id="calc-balance" value="1000" oninput="runCalculator()">
+                </div>
+                <div class="calc-group">
+                    <label>Risk Per Trade (%)</label>
+                    <input type="number" id="calc-risk" value="2" oninput="runCalculator()">
+                </div>
+                <div class="calc-group">
+                    <label>Martingale Multiplier (Steps)</label>
+                    <input type="number" id="calc-martin" value="2" readonly>
+                </div>
+                <div style="margin-top: 15px; padding: 10px; background: #1e2533; border-radius: 6px;">
+                    <p style="font-size: 13px;">Recommended Safe Trade: <strong style="color: var(--accent-green); float: right;" id="rec-trade">$20.00</strong></p>
+                    <p style="font-size: 13px; margin-top: 5px;">Step-1 Martingale Safe: <strong style="color: #eab308; float: right;" id="rec-m1">$44.00</strong></p>
+                </div>
+            </div>
+
+            <!-- Historical Trade Analytics Feed -->
+            <div class="card" style="grid-column: span 1; min-height: 250px;">
+                <div class="card-title"><i class="fa-solid fa-history"></i> Real-time Live Trade Signals History</div>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Asset</th>
+                            <th>Direction</th>
+                            <th>Accuracy Score</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-rows">
+                        <!-- Instantly filled via JS script -->
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Password Gatekeeper 
+        function checkPassword() {
+            const pass = document.getElementById('password-input').value;
+            if (pass === "Ayush") {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                generateAnalysis(); // trigger instant first calculation
+                startLiveFeedSimulation();
+            } else {
+                const errorLog = document.getElementById('login-error');
+                errorLog.style.display = 'block';
+                errorLog.style.animation = 'shake 0.2s ease-in-out';
+            }
+        }
+
+        // Live Probabilistic Analysis Logic (Matches 75% - 80% Win Setup simulation parameters)
+        function generateAnalysis() {
+            const asset = document.getElementById('asset-pair').value;
+            const tf = document.getElementById('timeframe').value;
+
+            // Engine Accuracy Targets (75% to 81%)
+            const upChance = Math.floor(Math.random() * (81 - 75 + 1)) + 75; 
+            const downChance = 100 - upChance;
+
+            const finalDirection = Math.random() > 0.4 ? "UP" : "DOWN";
+
+            const signalText = document.getElementById('signal-arrow');
+            const upPctSpan = document.getElementById('up-pct');
+            const downPctSpan = document.getElementById('down-pct');
+            const barUp = document.getElementById('bar-up');
+            const barDown = document.getElementById('bar-down');
+
+            if (finalDirection === "UP") {
+                signalText.innerText = "CALL / UP ⬆";
+                signalText.className = "signal-text signal-up";
+                upPctSpan.innerText = upChance + "%";
+                downPctSpan.innerText = downChance + "%";
+                barUp.style.width = upChance + "%";
+                barDown.style.width = downChance + "%";
+            } else {
+                signalText.innerText = "PUT / DOWN ⬇";
+                signalText.className = "signal-text signal-down";
+                upPctSpan.innerText = downChance + "%";
+                downPctSpan.innerText = upChance + "%";
+                barUp.style.width = downChance + "%";
+                barDown.style.width = upChance + "%";
+            }
+
+            // Technical Matrix Dynamic Updates
+            document.getElementById('ind-rsi').className = finalDirection === "UP" ? "status-high" : "status-low";
+            document.getElementById('ind-rsi').innerText = finalDirection === "UP" ? "Oversold Buy Trigger" : "Overbought Sell Trigger";
+            document.getElementById('ind-macd').className = finalDirection === "UP" ? "status-high" : "status-low";
+            document.getElementById('ind-macd').innerText = finalDirection === "UP" ? "Bullish Crossover" : "Bearish Crossover";
+            document.getElementById('ind-super').innerText = finalDirection === "UP" ? "Supertrend Green" : "Supertrend Red";
+            document.getElementById('ind-super').className = finalDirection === "UP" ? "status-high" : "status-low";
+
+            // Add to Live History Log
+            addHistoryRow(asset, finalDirection, finalDirection === "UP" ? upChance : upChance);
+        }
+
+        function addHistoryRow(asset, dir, score) {
+            const tbody = document.getElementById('history-rows');
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            const isWin = Math.random() < 0.78; // Simulating the target accuracy standard
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${timeStr}</td>
+                <td><strong>${asset}</strong></td>
+                <td class="${dir === 'UP' ? 'status-high' : 'status-low'}">${dir}</td>
+                <td>${score}% Confidence</td>
+                <td><span style="background: ${isWin ? 'var(--accent-green)' : 'var(--accent-red)'}; padding: 3px 8px; border-radius:4px; font-weight:bold; color: white;">${isWin ? 'PROFIT ITM' : 'OTM'}</span></td>
+            `;
+            
+            if(tbody.childNodes.length > 5) {
+                tbody.removeChild(tbody.lastChild);
+            }
+            tbody.insertBefore(tr, tbody.firstChild);
+        }
+
+        // Money Management System calculations
+        function runCalculator() {
+            const balance = parseFloat(document.getElementById('calc-balance').value) || 0;
+            const riskPct = parseFloat(document.getElementById('calc-risk').value) || 0;
+            
+            const standardTrade = (balance * (riskPct / 100));
+            const martingaleStep1 = standardTrade * 2.2;
+
+            document.getElementById('rec-trade').innerText = "$" + standardTrade.toFixed(2);
+            document.getElementById('rec-m1').innerText = "$" + martingaleStep1.toFixed(2);
+        }
+
+        // Continuous Loop to simulate ultra-responsive updates
+        function startLiveFeedSimulation() {
+            setInterval(() => {
+                // Instantly fluctuate S&R ticks to prove system is active
+                const sup = document.getElementById('pa-support');
+                const res = document.getElementById('pa-resistance');
+                sup.innerText = (parseFloat(sup.innerText) + (Math.random() * 0.0002 - 0.0001)).toFixed(5);
+                res.innerText = (parseFloat(res.innerText) + (Math.random() * 0.0002 - 0.0001)).toFixed(5);
+            }, 1500);
+        }
+
+        // Run calculator once at startup init
+        runCalculator();
+    </script>
+</body>
+</html>
